@@ -298,10 +298,7 @@ function Winter_TextButton:render()
 
     local y = (self:getHeight() - textHeight) / 2
     local hovered = self:isMouseOver()
-
-    local color = hovered
-        and self.hoverColor
-        or self.textColor
+    local color = hovered and self.hoverColor or self.textColor
 
     local outline = 1
     for ox = -outline, outline do
