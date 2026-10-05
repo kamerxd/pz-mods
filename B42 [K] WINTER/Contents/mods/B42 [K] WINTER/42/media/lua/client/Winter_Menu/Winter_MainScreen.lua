@@ -1,15 +1,18 @@
 
-local Winter_Soundplayer = require "Kamer_Winter_Menu/Winter_Soundplayer"
-local Winter_ScreenManager = require "Kamer_Winter_Menu/Winter_ScreenManager"
+local Winter_Soundplayer = require "Winter_Menu/Winter_Soundplayer"
+local Winter_ScreenManager = require "Winter_Menu/Winter_ScreenManager"
 
-local Winter_Menu = ISPanelJoypad:derive("Kamer_Winter_Menu")
+local Winter_Menu = ISPanelJoypad:derive("Winter_Menu")
 local Winter_Menu_Instance
 
-local Winter_TextButton = ISPanelJoypad:derive("Kamer_Winter_TextButton")
-local Winter_Controls = ISPanelJoypad:derive("Kamer_Winter_Controls")
+local Winter_PlayMenu = ISPanelJoypad:derive("Winter_PlayMenu")
+local Winter_PlayMenu_Instance
+
+local Winter_TextButton = ISPanelJoypad:derive("Winter_TextButton")
+local Winter_Controls = ISPanelJoypad:derive("Winter_Controls")
 local Winter_Controls_Instance
 
-local Winter_OtherControls = ISPanelJoypad:derive("Kamer_Winter_OtherControls")
+local Winter_OtherControls = ISPanelJoypad:derive("Winter_OtherControls")
 local Winter_OtherControls_Instance
 
 -- pz devs in nutshell
@@ -20,21 +23,48 @@ local WINTER_INTRO_FADE_TIME = 2.5
 
 local versionText = "Winter 0.1 | B42.21"
 
-local function Winter_hideMainControls()
-    Winter_Controls_Instance:setVisible(false)
-    Winter_OtherControls_Instance:setVisible(false)
+local function Winter_hideMainControls(val, val2)
+    if val then Winter_Controls_Instance:setVisible(false) end
+    if val2 then Winter_OtherControls_Instance:setVisible(false) end
 end
 
-local function Winter_showMainControls()
-    Winter_Controls_Instance:setVisible(true)
-    Winter_OtherControls_Instance:setVisible(true)
+local function Winter_showMainControls(val, val2)
+    if val then 
+        Winter_Controls_Instance:setVisible(true)
+        Winter_Controls_Instance:bringToTop()
+    end
+    if val2 then 
+        Winter_OtherControls_Instance:bringToTop()
+        Winter_OtherControls_Instance:setVisible(true)
+    end
+end
 
-    Winter_Controls_Instance:bringToTop()
-    Winter_OtherControls_Instance:bringToTop()
+local function Winter_onPlay(button)
+    Winter_hideMainControls(true, false)
+
+    local screenWidth = getCore():getScreenWidth()
+    local screenHeight = getCore():getScreenHeight()
+
+    Winter_PlayMenu_Instance = Winter_PlayMenu:new(
+        screenWidth / 2 - 150,
+        screenHeight / 2 - 150,
+        300,
+        300
+    )
+    Winter_PlayMenu_Instance.backgroundColor = {r = 0, g = 0, b = 0, a = 0} 
+    Winter_PlayMenu_Instance.borderColor = {r = 0, g = 0, b = 0, a = 0} 
+
+
+    Winter_PlayMenu_Instance:initialise()
+    Winter_PlayMenu_Instance:instantiate()
+    Winter_PlayMenu_Instance:addToUIManager()
+
+    Winter_PlayMenu_Instance:setAlwaysOnTop(true)
+    Winter_PlayMenu_Instance:bringToTop()
 end
 
 local function Winter_onMods(button)
-    Winter_hideMainControls() 
+    Winter_hideMainControls(true, true) 
 
     local screenWidth = getCore():getScreenWidth()
     local screenHeight = getCore():getScreenHeight()
@@ -52,7 +82,7 @@ local function Winter_onMods(button)
 
     modSelector.returnToUI = Winter_Menu_Instance
 
-    Winter_ScreenManager.open("mods", modSelector, {onEscape = function(screen) screen.backButton:forceClick() end, onClose = function() Winter_showMainControls() end})
+    Winter_ScreenManager.open("mods", modSelector, {onEscape = function(screen) screen.backButton:forceClick() end, onClose = function() Winter_showMainControls(true, true) end})
     modSelector:setVisible(true)
     modSelector:addToUIManager()
     modSelector:setAlwaysOnTop(true)
@@ -160,7 +190,7 @@ local function Winter_onSettingsSave(button)
 end
 
 local function Winter_onSettings(button)
-    Winter_hideMainControls()
+    Winter_hideMainControls(true, true)
 
     local screenWidth = getCore():getScreenWidth()
     local screenHeight = getCore():getScreenHeight()
@@ -178,7 +208,7 @@ local function Winter_onSettings(button)
     settings.acceptButton:setOnClick(Winter_onSettingsAccept)
     settings.saveButton:setOnClick(Winter_onSettingsSave)
 
-    Winter_ScreenManager.open("settings", settings, {onEscape = function(screen) screen.backButton:forceClick() end, onClose = function() Winter_showMainControls() end})
+    Winter_ScreenManager.open("settings", settings, {onEscape = function(screen) screen.backButton:forceClick() end, onClose = function() Winter_showMainControls(true, true) end})
     settings:setVisible(true) 
     settings:addToUIManager()
     settings:setAlwaysOnTop(true)
@@ -281,6 +311,25 @@ function Winter_Menu:render()
 
     -- Permanent darkness layer.
     self:drawRect(0, 0, self:getWidth(), self:getHeight(), eight_shades_of_grey, 0, 0, 0)
+
+        local barHeight = self:getHeight() * 0.10
+
+    -- Top
+    self:drawRect(
+        0, 0,
+        self:getWidth(),
+        barHeight,
+        1, 0, 0, 0
+    )
+
+    -- Bottom
+    self:drawRect(
+        0,
+        self:getHeight() - barHeight,
+        self:getWidth(),
+        barHeight,
+        1, 0, 0, 0
+    )
 end
 
 function Winter_TextButton:render()
@@ -346,6 +395,75 @@ function Winter_Controls:createChildren()
     self.versionLabel = ISLabel:new(x + (buttonWidth - versionWidth) / 2, y + (buttonHeight + spacing) * 4 + 4, 20, versionText, 1, 1, 1, 0.6, font, true)
     self.versionLabel:initialise()
     self:addChild(self.versionLabel)
+end
+
+function Winter_PlayMenu:createChildren()
+    local screenWidth = getCore():getScreenWidth()
+    local screenHeight = getCore():getScreenHeight()
+
+    local buttonWidth = screenWidth * 0.094
+    local buttonHeight = screenHeight * 0.037
+    local spacing = screenHeight * 0.007
+
+    local totalHeight = buttonHeight * 5 + spacing * 4
+    local x = (self:getWidth() - buttonWidth) / 2
+    local y = (self:getHeight() - totalHeight) / 2
+
+    self.continueButton = Winter_createButton(
+        self,
+        x,
+        y,
+        buttonWidth,
+        buttonHeight,
+        "CONTINUE",
+        Winter_onContinue
+    )
+
+    self.newGameButton = Winter_createButton(
+        self,
+        x,
+        y + (buttonHeight + spacing),
+        buttonWidth,
+        buttonHeight,
+        "NEW GAME",
+        Winter_onNewGame
+    )
+
+    self.loadGameButton = Winter_createButton(
+        self,
+        x,
+        y + (buttonHeight + spacing) * 2,
+        buttonWidth,
+        buttonHeight,
+        "LOAD GAME",
+        Winter_onLoadGame
+    )
+
+    self.multiplayerButton = Winter_createButton(
+        self,
+        x,
+        y + (buttonHeight + spacing) * 3,
+        buttonWidth,
+        buttonHeight,
+        "MULTIPLAYER",
+        Winter_onMultiplayer
+    )
+
+    self.backButton = Winter_createButton(
+        self,
+        x,
+        y + (buttonHeight + spacing) * 4,
+        buttonWidth,
+        buttonHeight,
+        "BACK",
+        Winter_onPlayBack
+    )
+
+    self.continueButton.font = UIFont.Large
+    self.newGameButton.font = UIFont.Large
+    self.loadGameButton.font = UIFont.Large
+    self.multiplayerButton.font = UIFont.Large
+    self.backButton.font = UIFont.Large
 end
 
 function Winter_OtherControls:createChildren()
@@ -529,7 +647,7 @@ function Winter_OtherControls:new()
     setmetatable(o, self)
     self.__index = self
     o.backgroundColor = {r = 0, g = 0, b = 0, a = 0}
-    o.borderColor = {r = 0, g = 0, b = 0, a = 0}
+    o.borderColor = {r = 0, g = 0, b = 1, a = 0}
 
     return o
 end

@@ -1,4 +1,4 @@
-local Winter_Soundplayer = require "Kamer_Winter_Menu/Winter_Soundplayer"
+local Winter_Soundplayer = require "Winter_Menu/Winter_Soundplayer"
 
 function MainOptions:onRestartRequiredClick(button, closeAfter)
 	if closeAfter then
