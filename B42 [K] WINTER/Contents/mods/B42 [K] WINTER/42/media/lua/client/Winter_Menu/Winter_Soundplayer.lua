@@ -12,6 +12,7 @@ end
 
 function Winter_Soundplayer.init()
     Winter_Soundplayer.SoundManager = getSoundManager()
+    Winter_Soundplayer.SoundManager:setMusicState("Loading")
     Winter_Soundplayer.backgroundMusic()
     
     Events.OnFETick.Add(Winter_Soundplayer.stopMainMusic)
