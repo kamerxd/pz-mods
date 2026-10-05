@@ -39,6 +39,17 @@ local function Winter_showMainControls(val, val2)
     end
 end
 
+local function Winter_onPlayBack()
+    local playControls = Winter_ScreenManager.getInstance()
+
+    if playControls then
+        playControls:setVisible(false)
+        playControls:removeFromUIManager()
+    end
+
+    Winter_ScreenManager.close("play", playControls)
+end
+
 local function Winter_onPlay(button)
     Winter_hideMainControls(true, false)
 
@@ -54,6 +65,18 @@ local function Winter_onPlay(button)
     Winter_PlayMenu_Instance.backgroundColor = {r = 0, g = 0, b = 0, a = 0} 
     Winter_PlayMenu_Instance.borderColor = {r = 0, g = 0, b = 0, a = 0} 
 
+    Winter_ScreenManager.open(
+        "play",
+        Winter_PlayMenu_Instance,
+        {
+            onEscape = function()
+                Winter_onPlayBack()
+            end,
+            onClose = function()
+                Winter_showMainControls(true, false)
+            end
+        }
+    )
 
     Winter_PlayMenu_Instance:initialise()
     Winter_PlayMenu_Instance:instantiate()
@@ -340,7 +363,7 @@ function Winter_TextButton:render()
 
     local x
     if self.textAlignLeft then
-        x = 10
+        x = 0
     else
         x = (self:getWidth() - textWidth) / 2
     end
@@ -376,8 +399,8 @@ function Winter_Controls:createChildren()
     local screenHeight = getCore():getScreenHeight()
 
     local buttonWidth = screenWidth * 0.094
-    local buttonHeight = screenHeight * 0.037
-    local spacing = screenHeight * 0.007
+    local buttonHeight = screenHeight * 0.030
+    local spacing = screenHeight * 0.001
     local totalHeight = buttonHeight * 4 + spacing * 3
     local x = (self:getWidth() - buttonWidth) / 2
     local y = (self:getHeight() - totalHeight) / 2 
@@ -402,8 +425,8 @@ function Winter_PlayMenu:createChildren()
     local screenHeight = getCore():getScreenHeight()
 
     local buttonWidth = screenWidth * 0.094
-    local buttonHeight = screenHeight * 0.037
-    local spacing = screenHeight * 0.007
+    local buttonHeight = screenHeight * 0.030
+    local spacing = screenHeight * 0.001
 
     local totalHeight = buttonHeight * 5 + spacing * 4
     local x = (self:getWidth() - buttonWidth) / 2
@@ -468,8 +491,8 @@ end
 
 function Winter_OtherControls:createChildren()
     local buttonWidth = self:getWidth()
-    local buttonHeight = getCore():getScreenHeight() * 0.0324
-    local spacing = getCore():getScreenHeight() * 0.0002
+    local buttonHeight = getCore():getScreenHeight() * 0.018
+    local spacing = getCore():getScreenHeight() * 0.001
 
     self.privacyButton = Winter_createButton(self, 0, buttonHeight + spacing, buttonWidth, buttonHeight, "LEGAL", Winter_onPrivacy)
     self.privacyButton.textAlignLeft = true
@@ -497,8 +520,8 @@ function Winter_Controls:onResolutionChange(oldw, oldh, neww, newh)
     self:setHeight(newh)
 
     local buttonWidth = neww * 0.094
-    local buttonHeight = newh * 0.037
-    local spacing = newh * 0.007
+    local buttonHeight = newh * 0.030
+    local spacing = newh * 0.001
 
     local totalHeight = buttonHeight * 4 + spacing * 3
 
@@ -544,14 +567,14 @@ function Winter_Menu:onResolutionChange(oldw, oldh, neww, newh)
 end
 
 function Winter_OtherControls:onResolutionChange(oldw, oldh, neww, newh)
-    local buttonHeight = newh * 0.0324
-    local spacing = newh * 0.0002
+    local buttonHeight = newh * 0.018
+    local spacing = newh * 0.001
 
     local width = neww * 0.10
     local height = buttonHeight * 3 + spacing * 2
 
     local x = 0
-    local y = newh - height - 10
+    local y = newh - height
 
     self:setWidth(width)
     self:setHeight(height)
@@ -634,14 +657,14 @@ function Winter_OtherControls:new()
     local screenWidth = getCore():getScreenWidth()
     local screenHeight = getCore():getScreenHeight()
 
-    local buttonHeight = screenHeight * 0.0324
-    local spacing = screenHeight * 0.0002
+    local buttonHeight = screenHeight * 0.018
+    local spacing = screenHeight * 0.001
 
     local width = screenWidth * 0.10
     local height = buttonHeight * 3 + spacing * 2
 
     local x = 0
-    local y = screenHeight - height - 10
+    local y = screenHeight - height
 
     local o = ISPanelJoypad:new(x, y, width, height)
     setmetatable(o, self)
