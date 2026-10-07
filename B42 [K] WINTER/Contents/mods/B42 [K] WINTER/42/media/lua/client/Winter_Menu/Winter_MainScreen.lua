@@ -4,14 +4,14 @@ local Winter_BottomButtons = require "Winter_Menu/Winter_BottomButtons"
 local Winter_PlayButtons = require "Winter_Menu/Winter_PlayButtons"
 
 local Winter_MainMenu = ISPanelJoypad:derive("Winter_MainMenu")
-Winter_MainMenu.Instance = nil
+Winter_MainMenu.instance = nil
 
 local function Winter_onKeyPressed(key)
     if key ~= Keyboard.KEY_ESCAPE then
         return
     end
 
-    local menu = Winter_MainMenu.Instance
+    local menu = Winter_MainMenu.instance
 
     if not menu then
         return
@@ -38,7 +38,7 @@ function Winter_MainMenu:new()
     setmetatable(o, self)
     self.__index = self
 
-    Winter_MainMenu.Instance = o
+    Winter_MainMenu.instance = o
     o.video = Winter_Video:new()
 
     return o
@@ -117,9 +117,9 @@ function Winter_MainMenu:prerender()
 
 end
 
-function Winter_MainMenu:render()
+-- function Winter_MainMenu:render()
 
-end
+-- end
 
 function Winter_MainMenu:showMainButtons()
 
@@ -127,7 +127,34 @@ function Winter_MainMenu:showMainButtons()
     self.mainButtons:setVisible(true)
 end
 
-Events.OnKeyPressed.Add(Winter_onKeyPressed)
+local function Winter_onResolutionChange(oldw, oldh, neww, newh)
 
+    local menu = Winter_MainMenu.instance
+
+    if not menu then
+        return
+    end
+
+    menu:setWidth(neww)
+    menu:setHeight(newh)
+    menu:setX(0)
+    menu:setY(0)
+
+    if menu.mainButtons then
+        menu.mainButtons:onResolutionChange(oldw, oldh, neww, newh)
+    end
+
+    if menu.playButtons then
+        menu.playButtons:onResolutionChange(oldw, oldh, neww, newh)
+    end
+
+    if menu.bottomButtons then
+        menu.bottomButtons:onResolutionChange(oldw, oldh, neww, newh)
+    end
+
+end
+
+Events.OnResolutionChange.Add(Winter_onResolutionChange)
+Events.OnKeyPressed.Add(Winter_onKeyPressed)
 
 return Winter_MainMenu

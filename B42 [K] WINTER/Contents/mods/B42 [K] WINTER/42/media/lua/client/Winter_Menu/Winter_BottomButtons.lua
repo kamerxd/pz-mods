@@ -111,7 +111,7 @@ function Winter_BottomButtons:new()
 
     o.buttonHeight = buttonHeight
     o.spacing = spacing
-        o.backgroundColor = {
+    o.backgroundColor = {
         r = 0,
         g = 0,
         b = 0,
@@ -189,6 +189,42 @@ function Winter_BottomButtons:createChildren()
         b = 0.2,
         a = 1
     }
+
+end
+
+function Winter_BottomButtons:onResolutionChange(oldw, oldh, neww, newh)
+
+    local buttonHeight = newh * 0.018
+    local spacing = newh * 0.001
+
+    local width = neww * 0.10
+    local height = buttonHeight * 3 + spacing * 2
+
+    local x = 0
+    local y = newh - height
+
+    self.buttonHeight = buttonHeight
+    self.spacing = spacing
+
+    self:setWidth(width)
+    self:setHeight(height)
+    self:setX(x)
+    self:setY(y)
+
+    self.reloadLuaButton:setWidth(width)
+    self.reloadLuaButton:setHeight(buttonHeight)
+    self.reloadLuaButton:setX(0)
+    self.reloadLuaButton:setY(0)
+
+    self.privacyButton:setWidth(width)
+    self.privacyButton:setHeight(buttonHeight)
+    self.privacyButton:setX(0)
+    self.privacyButton:setY(buttonHeight + spacing)
+
+    self.reportButton:setWidth(width)
+    self.reportButton:setHeight(buttonHeight)
+    self.reportButton:setX(0)
+    self.reportButton:setY((buttonHeight + spacing) * 2)
 
 end
 

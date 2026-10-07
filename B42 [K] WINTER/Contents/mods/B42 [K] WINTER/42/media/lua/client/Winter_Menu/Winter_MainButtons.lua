@@ -154,6 +154,9 @@ function Winter_MainButtons:new()
         a = 0
     }
 
+    o.buttonHeight = buttonHeight
+    o.spacing = spacing
+    
     return o
 end
 
@@ -161,8 +164,8 @@ end
 function Winter_MainButtons:createChildren()
 
     local buttonWidth = self:getWidth()
-    local buttonHeight = getCore():getScreenHeight() * 0.030
-    local spacing = getCore():getScreenHeight() * 0.001
+    local buttonHeight = self.buttonHeight
+    local spacing = self.spacing
 
     self.playButton = Winter_UiUtils.createButton(
         self,
@@ -209,17 +212,12 @@ function Winter_MainButtons:createChildren()
     )
 
     local modInfo = getModInfoByID("kamer_winter")
-
     local modVersion = "?"
-
-    if modInfo then
-        modVersion = modInfo:getModVersion()
-    end
+    if modInfo then modVersion = modInfo:getModVersion() end
 
     local gameVersion = getGameVersion()
-
-    local versionText =
-        "Winter " .. modVersion .. " | B" .. gameVersion
+    local versionText = "Winter " .. modVersion .. " | B" .. gameVersion
+    self.versionText = versionText   
 
     local font = UIFont.Small
     local textManager = getTextManager()
@@ -287,6 +285,21 @@ function Winter_MainButtons:onResolutionChange(oldw, oldh, neww, newh)
     self.quitButton:setHeight(buttonHeight)
     self.quitButton:setX(0)
     self.quitButton:setY((buttonHeight + spacing) * 3)
+
+    local versionWidth =
+        getTextManager():MeasureStringX(
+            UIFont.Small,
+            self.versionText
+        )
+
+    self.versionLabel:setWidth(versionWidth)
+    self.versionLabel:setX(
+        (self:getWidth() - versionWidth) / 2
+    )
+
+    self.versionLabel:setY(
+        (buttonHeight + spacing) * 4 + 4
+    )
 
 end
 
