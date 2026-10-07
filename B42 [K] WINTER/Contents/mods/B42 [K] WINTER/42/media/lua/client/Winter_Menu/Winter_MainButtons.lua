@@ -58,50 +58,11 @@ end
 local function Winter_onMods(button)
 
     local mainMenu = button.parent.mainMenu
-    local mainScreen = MainScreen.instance
-    local mods = mainScreen.modSelect
 
     mainMenu.mainButtons:setVisible(false)
     mainMenu.bottomButtons:setVisible(false)
-
-    mods:setNewGame()
-
-    mods:detachFromParent()
-    mods:addToUIManager()
-
-    local joypadData = JoypadState.getMainMenuJoypad()
-
-    mods:setVisible(true, joypadData)
-    mods.model:reloadMods()
-
-    ModSelector.showNagPanel()
-
-    mods.returnToUI = mainMenu
-
-    if not mods.winterAcceptHooked then
-
-        local vanillaOnAccept = mods.onAccept
-
-        mods.onAccept = function(self)
-
-            vanillaOnAccept(self)
-
-            self:removeFromUIManager()
-            mainScreen:addChild(self)
-
-            self:setAlwaysOnTop(false)
-
-            mainMenu.mainButtons:setVisible(true)
-            mainMenu.bottomButtons:setVisible(true)
-
-        end
-
-        mods.winterAcceptHooked = true
-
-    end
-
-    mods:setAlwaysOnTop(true)
-    mods:bringToTop()
+    mainMenu.mods:setVisible(true)
+    mainMenu.mods.modList:loadMods()
 
 end
 

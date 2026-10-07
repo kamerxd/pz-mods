@@ -2,6 +2,7 @@ local Winter_Video = require "Winter_Menu/Winter_Video"
 local Winter_MainButtons = require "Winter_Menu/Winter_MainButtons"
 local Winter_BottomButtons = require "Winter_Menu/Winter_BottomButtons"
 local Winter_PlayButtons = require "Winter_Menu/Winter_PlayButtons"
+local Winter_Mods = require "Winter_Menu/Winter_Mods"
 
 local Winter_MainMenu = ISPanelJoypad:derive("Winter_MainMenu")
 Winter_MainMenu.instance = nil
@@ -49,20 +50,23 @@ function Winter_MainMenu:createChildren()
     self.mainButtons = Winter_MainButtons:new()
     self.mainButtons:initialise()
     self:addChild(self.mainButtons)
+    self.mainButtons.mainMenu = self
 
     self.playButtons = Winter_PlayButtons:new()
     self.playButtons:initialise()
     self:addChild(self.playButtons)
+    self.playButtons.mainMenu = self
+    self.playButtons:setVisible(false)
 
     self.bottomButtons = Winter_BottomButtons:new()
     self.bottomButtons:initialise()
     self:addChild(self.bottomButtons)
 
-
-    self.mainButtons.mainMenu = self
-    self.playButtons.mainMenu = self
-
-    self.playButtons:setVisible(false)
+    self.mods = Winter_Mods:new()
+    self.mods:initialise()
+    self:addChild(self.mods)
+    self.mods.mainMenu = self
+    self.mods:setVisible(false)
 
 end
 
