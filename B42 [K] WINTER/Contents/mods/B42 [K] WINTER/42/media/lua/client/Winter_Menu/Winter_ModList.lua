@@ -16,6 +16,12 @@ local SCROLL_OFFSET = 10
 local GOLD_R, GOLD_G, GOLD_B = 0.32, 0.27, 0.10
 local ACTIVE_R, ACTIVE_G, ACTIVE_B = 1.0, 0.82, 0.35
 
+local ROW_R, ROW_G, ROW_B = 0.06, 0.08, 0.09
+local HOVER_R, HOVER_G, HOVER_B = 0.12, 0.16, 0.17
+local TEXT_R, TEXT_G, TEXT_B = 0.82, 0.85, 0.86
+local BORDER_R, BORDER_G, BORDER_B = 0.35, 0.43, 0.46
+local AUTHOR_R, AUTHOR_G, AUTHOR_B = 0.55, 0.59, 0.60
+
 if not ModSelector.Model._winterFavoriteSaveHooked then
     local originalSetFavorite = ModSelector.Model.setFavorite
 
@@ -25,6 +31,10 @@ if not ModSelector.Model._winterFavoriteSaveHooked then
     end
 
     ModSelector.Model._winterFavoriteSaveHooked = true
+end
+
+local function isFavorite(modData)
+    return modData.favorite ~= nil and modData.favorite ~= false
 end
 
 local function getFavoriteX(list)
@@ -49,7 +59,7 @@ function Winter_ModList:setup()
     self.font = UIFont.Medium
     self.drawBorder = true
     self.backgroundColor = {r = 0.035, g = 0.05, b = 0.055, a = 0.75}
-    self.borderColor = {r = 0.35, g = 0.43, b = 0.46, a = 0.7}
+    self.borderColor = {r = BORDER_R, g = BORDER_G, b = BORDER_B, a = 0.7}
     self.doDrawItem = self.drawModListItem
     self:loadMods()
 end
@@ -88,8 +98,8 @@ function Winter_ModList:loadMods()
     end
 
     table.sort(mods, function(a, b)
-        local aFavorite = a.modData.favorite ~= nil and a.modData.favorite ~= false
-        local bFavorite = b.modData.favorite ~= nil and b.modData.favorite ~= false
+        local aFavorite = isFavorite(a.modData)
+        local bFavorite = isFavorite(b.modData)
 
         if aFavorite ~= bFavorite then
             return aFavorite
@@ -110,32 +120,89 @@ function Winter_ModList:drawModListItem(y, item)
     local itemData = item.item
     local data = itemData.modData
     local isActive = data.isActive == true
-    local isFavorite = data.favorite ~= nil and data.favorite ~= false
+    local isFavoriteMod = isFavorite(data)
     local selected = self.selected == item.index
     local hovered = self.mouseoverselected == item.index and not self:isMouseOverScrollBar()
 
-    local backgroundR, backgroundG, backgroundB = 0.06, 0.08, 0.09
+    local backgroundR, backgroundG, backgroundB = ROW_R, ROW_G, ROW_B
     local backgroundAlpha = 0.45
 
     if selected then
         backgroundR, backgroundG, backgroundB = GOLD_R, GOLD_G, GOLD_B
         backgroundAlpha = 0.75
     elseif hovered then
-        backgroundR, backgroundG, backgroundB = 0.12, 0.16, 0.17
+        backgroundR, backgroundG, backgroundB = HOVER_R, HOVER_G, HOVER_B
         backgroundAlpha = 0.65
     end
 
-    self:drawRect(0, y, width, rowHeight, backgroundAlpha, backgroundR, backgroundG, backgroundB)
-    self:drawRectBorder(0, y, width, rowHeight, 0.45, 0.35, 0.43, 0.46)
+    self:drawRect(
+        0,
+        y,
+        width,
+        rowHeight,
+        backgroundAlpha,
+        backgroundR,
+        backgroundG,
+        backgroundB
+    )
+
+    self:drawRectBorder(
+        0,
+        y,
+        width,
+        rowHeight,
+        0.45,
+        BORDER_R,
+        BORDER_G,
+        BORDER_B
+    )
 
     local checkY = y + (rowHeight - CHECK_SIZE) / 2
 
-    self:drawRectBorder(CHECK_X, checkY, CHECK_SIZE, CHECK_SIZE, 0.7, 0.55, 0.65, 0.70)
+    self:drawRectBorder(
+        CHECK_X,
+        checkY,
+        CHECK_SIZE,
+        CHECK_SIZE,
+        0.7,
+        0.55,
+        0.65,
+        0.70
+    )
 
     if isActive then
-        self:drawRect(CHECK_X + 2, checkY + 2, CHECK_SIZE - 4, CHECK_SIZE - 4, 1.0, ACTIVE_R, ACTIVE_G, ACTIVE_B)
-        self:drawLine2(CHECK_X + 4, checkY + 8, CHECK_X + 7, checkY + 11, 1.0, 0.08, 0.10, 0.11)
-        self:drawLine2(CHECK_X + 7, checkY + 11, CHECK_X + 12, checkY + 5, 1.0, 0.08, 0.10, 0.11)
+        self:drawRect(
+            CHECK_X + 2,
+            checkY + 2,
+            CHECK_SIZE - 4,
+            CHECK_SIZE - 4,
+            1.0,
+            ACTIVE_R,
+            ACTIVE_G,
+            ACTIVE_B
+        )
+
+        self:drawLine2(
+            CHECK_X + 4,
+            checkY + 8,
+            CHECK_X + 7,
+            checkY + 11,
+            1.0,
+            0.08,
+            0.10,
+            0.11
+        )
+
+        self:drawLine2(
+            CHECK_X + 7,
+            checkY + 11,
+            CHECK_X + 12,
+            checkY + 5,
+            1.0,
+            0.08,
+            0.10,
+            0.11
+        )
     end
 
     local iconSize = BUTTON_HGT
@@ -143,13 +210,23 @@ function Winter_ModList:drawModListItem(y, item)
     local iconY = y + (rowHeight - iconSize) / 2
 
     if itemData.iconTexture then
-        self:drawTextureScaled(itemData.iconTexture, iconX, iconY, iconSize, iconSize, 1, 1, 1, 1)
+        self:drawTextureScaled(
+            itemData.iconTexture,
+            iconX,
+            iconY,
+            iconSize,
+            iconSize,
+            1,
+            1,
+            1,
+            1
+        )
     end
 
     local textX = iconX + iconSize + TEXT_GAP
     local textY = y + (rowHeight - TEXT_HEIGHT) / 2
 
-    local textR, textG, textB = 0.82, 0.85, 0.86
+    local textR, textG, textB = TEXT_R, TEXT_G, TEXT_B
 
     if isActive then
         textR, textG, textB = ACTIVE_R, ACTIVE_G, ACTIVE_B
@@ -157,13 +234,22 @@ function Winter_ModList:drawModListItem(y, item)
         textR, textG, textB = 0.95, 0.97, 0.98
     end
 
-    self:drawText(item.text, textX, textY, textR, textG, textB, 1.0, self.font)
+    self:drawText(
+        item.text,
+        textX,
+        textY,
+        textR,
+        textG,
+        textB,
+        1.0,
+        self.font
+    )
 
     local favoriteX = getFavoriteX(self)
     local favoriteY = y + (rowHeight - BUTTON_HGT) / 2
 
     self:drawTextureScaled(
-        isFavorite and self.starSetTexture or self.starUnsetTexture,
+        isFavoriteMod and self.starSetTexture or self.starUnsetTexture,
         favoriteX,
         favoriteY,
         BUTTON_HGT,
@@ -184,10 +270,20 @@ function Winter_ModList:drawModListItem(y, item)
                 while #author > 3 and TEXT_MANAGER:MeasureStringX(self.font, author .. "...") > availableWidth do
                     author = string.sub(author, 1, #author - 1)
                 end
+
                 author = author .. "..."
             end
 
-            self:drawTextRight(author, authorX, textY, 0.55, 0.59, 0.60, 0.9, self.font)
+            self:drawTextRight(
+                author,
+                authorX,
+                textY,
+                AUTHOR_R,
+                AUTHOR_G,
+                AUTHOR_B,
+                0.9,
+                self.font
+            )
         end
     end
 
@@ -202,8 +298,9 @@ function Winter_ModList:toggleSelectedMod()
     end
 
     local modData = item.item.modData
+    local model = ModSelector.instance.model
 
-    ModSelector.instance.model:forceActivateMods(
+    model:forceActivateMods(
         modData.modInfo,
         not modData.isActive
     )
@@ -215,8 +312,9 @@ function Winter_ModList:toggleFavorite(item)
     end
 
     local modData = item.item.modData
+    local model = ModSelector.instance.model
 
-    ModSelector.instance.model:setFavorite(
+    model:setFavorite(
         modData.modId,
         not modData.favorite
     )
@@ -237,6 +335,7 @@ function Winter_ModList:onMouseDown(x, y)
 
     if x >= CHECK_X and x <= CHECK_X + CHECK_SIZE then
         self.selected = row
+        self:updateSelection()
         self:toggleSelectedMod()
         return true
     end
@@ -249,7 +348,17 @@ function Winter_ModList:onMouseDown(x, y)
     end
 
     self.selected = row
+    self:updateSelection()
+
     return true
+end
+
+function Winter_ModList:updateSelection()
+    local item = self.items[self.selected]
+
+    if item and item.item and self.parent.modInfo then
+        self.parent.modInfo:updateView(item.item.modData.modInfo)
+    end
 end
 
 return Winter_ModList
