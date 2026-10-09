@@ -302,8 +302,10 @@ function Winter_ModList:toggleSelectedMod()
 
     model:forceActivateMods(
         modData.modInfo,
-        not modData.isActive
+        not model:isModActive(modData.modId)
     )
+
+    self:updateSelection()
 end
 
 function Winter_ModList:toggleFavorite(item)
