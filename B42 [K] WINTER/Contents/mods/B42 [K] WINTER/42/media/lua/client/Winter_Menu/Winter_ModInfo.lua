@@ -433,7 +433,7 @@ local function makeModLinkValue(className, kind)
     function class:prerender()
         ISPanelJoypad.prerender(self)
         if #self.items == 0 then
-            self:drawText("None", UI_BORDER_SPACING, 2, TEXT_COLOR.r, TEXT_COLOR.g, TEXT_COLOR.b, TEXT_COLOR.a, UIFont.Small)
+            self:drawText("", UI_BORDER_SPACING, 2, TEXT_COLOR.r, TEXT_COLOR.g, TEXT_COLOR.b, TEXT_COLOR.a, UIFont.Small)
             self.pressed = false
             return
         end
@@ -778,7 +778,7 @@ end
 function Winter_ModInfo:updateChangelogLayout()
     if not self.incompatiblePanel or not self.changelogPanel or not self.changelogValuePanel then return end
     local y = self.incompatiblePanel:getBottom() - 1
-    local height = math.max(BUTTON_HGT, self.height - y - UI_BORDER_SPACING)
+    local height = math.max(BUTTON_HGT, self.height - y)
     self.changelogPanel:setY(y)
     self.changelogPanel:setHeight(height)
     self.changelogValuePanel:setY(y)
@@ -829,7 +829,7 @@ function Winter_ModInfo:createChildren()
     self.incompatibleValuePanel = addPanel(self, Winter_ModInfoIncompatibleValue, statusWidth - 1, y, self.width - statusWidth + 1, BUTTON_HGT)
 
     y = self.incompatiblePanel:getBottom() - 1
-    local height = math.max(BUTTON_HGT, self.height - y - UI_BORDER_SPACING)
+    local height = math.max(BUTTON_HGT, self.height - y)
     self.changelogPanel = addPanel(self, Winter_ModInfoChangelog, 0, y, statusWidth, height)
     self.changelogValuePanel = addPanel(self, Winter_ModInfoChangelogValue, statusWidth - 1, y, self.width - statusWidth + 1, height)
     self:updateChangelogLayout()
