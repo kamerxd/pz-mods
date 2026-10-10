@@ -1,3 +1,4 @@
+
 local Winter_ModList = ISScrollingListBox:derive("Winter_ModList")
 
 local TEXT_MANAGER = getTextManager()
@@ -8,6 +9,7 @@ local TEXT_HEIGHT = TEXT_MANAGER:getFontFromEnum(UIFont.Medium):getLineHeight()
 local TEXT_SPACING = TEXT_MANAGER:MeasureStringX(UIFont.Small, "  ")
 local CHECK_SIZE = 16
 local CHECK_X = 8
+local CHECK_PANEL_WIDTH = CHECK_X * 2 + CHECK_SIZE
 local ICON_GAP = 6
 local TEXT_GAP = 4
 local AUTHOR_GAP = 10
@@ -42,6 +44,33 @@ local function getFavoriteX(list)
     return list.width - UI_BORDER_SPACING - BUTTON_HGT - 1 - offset
 end
 
+local function truncateText(text, font, maxWidth)
+    if maxWidth <= 0 then
+        return ""
+    end
+
+    if TEXT_MANAGER:MeasureStringX(font, text) <= maxWidth then
+        return text
+    end
+
+    local ellipsis = "..."
+    local ellipsisWidth = TEXT_MANAGER:MeasureStringX(font, ellipsis)
+
+    if ellipsisWidth > maxWidth then
+        return ""
+    end
+
+    while #text > 0 do
+        text = string.sub(text, 1, #text - 1)
+
+        if TEXT_MANAGER:MeasureStringX(font, text) + ellipsisWidth <= maxWidth then
+            return text .. ellipsis
+        end
+    end
+
+    return ellipsis
+end
+
 function Winter_ModList:new(x, y, width, height)
     local o = ISScrollingListBox:new(x, y, width, height)
 
@@ -61,6 +90,7 @@ function Winter_ModList:setup()
     self.backgroundColor = {r = 0.035, g = 0.05, b = 0.055, a = 0.75}
     self.borderColor = {r = BORDER_R, g = BORDER_G, b = BORDER_B, a = 0.7}
     self.doDrawItem = self.drawModListItem
+
     self:loadMods()
 end
 
@@ -78,22 +108,25 @@ function Winter_ModList:loadMods()
 
     for modId, modData in pairs(model.mods) do
         local modInfo = modData.modInfo
-        local name = modInfo:getName()
 
-        if name and name ~= "" then
-            local displayName = getTextOrNull(name) or name
-            local author = modInfo:getAuthor() or ""
-            local icon = modInfo:getIcon()
+        if modInfo then
+            local name = modInfo:getName()
 
-            mods[#mods + 1] = {
-                modId = modId,
-                modData = modData,
-                name = displayName,
-                author = author,
-                iconTexture = icon and icon ~= "" and getTexture(icon) or nil,
-                nameWidth = TEXT_MANAGER:MeasureStringX(self.font, displayName),
-                authorWidth = TEXT_MANAGER:MeasureStringX(self.font, author)
-            }
+            if name and name ~= "" then
+                local displayName = getTextOrNull(name) or name
+                local author = modInfo:getAuthor() or ""
+                local icon = modInfo:getIcon()
+
+                mods[#mods + 1] = {
+                    modId = modId,
+                    modData = modData,
+                    name = displayName,
+                    author = author,
+                    iconTexture = icon and icon ~= "" and getTexture(icon) or nil,
+                    nameWidth = TEXT_MANAGER:MeasureStringX(self.font, displayName),
+                    authorWidth = TEXT_MANAGER:MeasureStringX(self.font, author)
+                }
+            end
         end
     end
 
@@ -136,96 +169,110 @@ function Winter_ModList:drawModListItem(y, item)
     end
 
     self:drawRect(
-        0,
-        y,
-        width,
-        rowHeight,
+        0, y, width, rowHeight,
         backgroundAlpha,
-        backgroundR,
-        backgroundG,
-        backgroundB
+        backgroundR, backgroundG, backgroundB
     )
 
     self:drawRectBorder(
-        0,
-        y,
-        width,
-        rowHeight,
+        0, y, width, rowHeight,
         0.45,
-        BORDER_R,
-        BORDER_G,
-        BORDER_B
+        BORDER_R, BORDER_G, BORDER_B
+    )
+
+    self:drawRect(
+        CHECK_PANEL_WIDTH, y + 1, 1, rowHeight - 2,
+        0.75,
+        BORDER_R, BORDER_G, BORDER_B
     )
 
     local checkY = y + (rowHeight - CHECK_SIZE) / 2
 
+    self:drawRect(
+        CHECK_X, checkY, CHECK_SIZE, CHECK_SIZE,
+        0.85,
+        0.025, 0.035, 0.04
+    )
+
     self:drawRectBorder(
-        CHECK_X,
-        checkY,
-        CHECK_SIZE,
-        CHECK_SIZE,
-        0.7,
-        0.55,
-        0.65,
-        0.70
+        CHECK_X, checkY, CHECK_SIZE, CHECK_SIZE,
+        0.8,
+        0.55, 0.65, 0.70
     )
 
     if isActive then
         self:drawRect(
-            CHECK_X + 2,
-            checkY + 2,
-            CHECK_SIZE - 4,
-            CHECK_SIZE - 4,
+            CHECK_X + 2, checkY + 2, CHECK_SIZE - 4, CHECK_SIZE - 4,
             1.0,
-            ACTIVE_R,
-            ACTIVE_G,
-            ACTIVE_B
+            ACTIVE_R, ACTIVE_G, ACTIVE_B
         )
 
         self:drawLine2(
-            CHECK_X + 4,
-            checkY + 8,
-            CHECK_X + 7,
-            checkY + 11,
-            1.0,
-            0.08,
-            0.10,
-            0.11
+            CHECK_X + 4, checkY + 8,
+            CHECK_X + 7, checkY + 11,
+            1.0, 0.08, 0.10, 0.11
         )
 
         self:drawLine2(
-            CHECK_X + 7,
-            checkY + 11,
-            CHECK_X + 12,
-            checkY + 5,
-            1.0,
-            0.08,
-            0.10,
-            0.11
+            CHECK_X + 7, checkY + 11,
+            CHECK_X + 12, checkY + 5,
+            1.0, 0.08, 0.10, 0.11
         )
     end
 
     local iconSize = BUTTON_HGT
-    local iconX = CHECK_X + CHECK_SIZE + ICON_GAP
+    local iconX = CHECK_PANEL_WIDTH + ICON_GAP
     local iconY = y + (rowHeight - iconSize) / 2
 
     if itemData.iconTexture then
         self:drawTextureScaled(
             itemData.iconTexture,
-            iconX,
-            iconY,
-            iconSize,
-            iconSize,
-            1,
-            1,
-            1,
-            1
+            iconX, iconY,
+            iconSize, iconSize,
+            1, 1, 1, 1
         )
     end
 
     local textX = iconX + iconSize + TEXT_GAP
     local textY = y + (rowHeight - TEXT_HEIGHT) / 2
+    local favoriteX = getFavoriteX(self)
+    local favoriteY = y + (rowHeight - BUTTON_HGT) / 2
 
+    self:drawTextureScaled(
+        isFavoriteMod and self.starSetTexture or self.starUnsetTexture,
+        favoriteX, favoriteY,
+        BUTTON_HGT, BUTTON_HGT,
+        1, 1, 1, 1
+    )
+
+    local authorX = favoriteX - AUTHOR_GAP
+    local author = itemData.author
+    local authorWidth = 0
+
+    if author ~= "" then
+        local availableAuthorWidth = authorX - textX - TEXT_SPACING
+        author = truncateText(author, self.font, availableAuthorWidth)
+        authorWidth = TEXT_MANAGER:MeasureStringX(self.font, author)
+
+        if authorWidth > 0 then
+            self:drawTextRight(
+                author,
+                authorX,
+                textY,
+                AUTHOR_R, AUTHOR_G, AUTHOR_B,
+                0.9,
+                self.font
+            )
+        end
+    end
+
+    local availableNameWidth = authorX - textX - authorWidth - TEXT_SPACING
+
+    if authorWidth == 0 then
+        availableNameWidth = favoriteX - textX - TEXT_SPACING
+    end
+
+    local name = truncateText(item.text, self.font, availableNameWidth)
     local textR, textG, textB = TEXT_R, TEXT_G, TEXT_B
 
     if isActive then
@@ -235,57 +282,13 @@ function Winter_ModList:drawModListItem(y, item)
     end
 
     self:drawText(
-        item.text,
+        name,
         textX,
         textY,
-        textR,
-        textG,
-        textB,
+        textR, textG, textB,
         1.0,
         self.font
     )
-
-    local favoriteX = getFavoriteX(self)
-    local favoriteY = y + (rowHeight - BUTTON_HGT) / 2
-
-    self:drawTextureScaled(
-        isFavoriteMod and self.starSetTexture or self.starUnsetTexture,
-        favoriteX,
-        favoriteY,
-        BUTTON_HGT,
-        BUTTON_HGT,
-        1,
-        1,
-        1,
-        1
-    )
-
-    if itemData.author ~= "" then
-        local authorX = favoriteX - AUTHOR_GAP
-        local availableWidth = authorX - textX - itemData.nameWidth - TEXT_SPACING
-        local author = itemData.author
-
-        if availableWidth > 0 then
-            if itemData.authorWidth > availableWidth then
-                while #author > 3 and TEXT_MANAGER:MeasureStringX(self.font, author .. "...") > availableWidth do
-                    author = string.sub(author, 1, #author - 1)
-                end
-
-                author = author .. "..."
-            end
-
-            self:drawTextRight(
-                author,
-                authorX,
-                textY,
-                AUTHOR_R,
-                AUTHOR_G,
-                AUTHOR_B,
-                0.9,
-                self.font
-            )
-        end
-    end
 
     return y + rowHeight
 end
@@ -318,8 +321,21 @@ function Winter_ModList:toggleFavorite(item)
 
     model:setFavorite(
         modData.modId,
-        not modData.favorite
+        not isFavorite(modData)
     )
+
+    local selectedModId = modData.modId
+
+    self:loadMods()
+
+    for i, listItem in ipairs(self.items) do
+        if listItem.item.modId == selectedModId then
+            self.selected = i
+            break
+        end
+    end
+
+    self:updateSelection()
 end
 
 function Winter_ModList:onMouseDown(x, y)
@@ -335,17 +351,20 @@ function Winter_ModList:onMouseDown(x, y)
 
     local item = self.items[row]
 
-    if x >= CHECK_X and x <= CHECK_X + CHECK_SIZE then
-        self.selected = row
-        self:updateSelection()
-        self:toggleSelectedMod()
-        return true
+    if not item or not item.item then
+        return
     end
 
     local favoriteX = getFavoriteX(self)
 
     if x >= favoriteX and x <= favoriteX + BUTTON_HGT then
         self:toggleFavorite(item)
+        return true
+    end
+
+    if x >= 0 and x < CHECK_PANEL_WIDTH then
+        self.selected = row
+        self:toggleSelectedMod()
         return true
     end
 
@@ -358,7 +377,7 @@ end
 function Winter_ModList:updateSelection()
     local item = self.items[self.selected]
 
-    if item and item.item and self.parent.modInfo then
+    if item and item.item and self.parent and self.parent.modInfo then
         self.parent.modInfo:updateView(item.item.modData.modInfo)
     end
 end
