@@ -34,11 +34,6 @@ local function Winter_onPrivacy(button)
     modal:addToUIManager()
     modal:setAlwaysOnTop(true)
 
-    -- Keep this disabled for now if ScreenManager
-    -- is not part of the new menu yet.
-    --
-    -- Winter_ScreenManager.open("legal", modal)
-
     local player = 0
 
     if player and JoypadState.players[player + 1] then

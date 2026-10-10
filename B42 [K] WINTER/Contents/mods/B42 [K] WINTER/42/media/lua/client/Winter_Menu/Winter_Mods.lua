@@ -54,12 +54,13 @@ function Winter_Mods:createChildren()
     local buttonWidth = BUTTON_PADDING + TEXT_MANAGER:MeasureStringX(font, "BACK")
     local listWidth = self.width / 2 - UI_BORDER_SPACING
     local listHeight = self.height - LIST_Y - UI_BORDER_SPACING * 2 - buttonHeight - 1
+    local listTopOffset = math.floor(listHeight * 0.1 + 0.5) - 2
 
     self.modList = Winter_ModList:new(
         UI_BORDER_SPACING,
-        LIST_Y,
+        LIST_Y + listTopOffset,
         listWidth,
-        listHeight
+        listHeight - listTopOffset
     )
     self.modList:initialise()
     self.modList:instantiate()
